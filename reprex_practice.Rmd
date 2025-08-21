@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#| knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
@@ -37,7 +37,7 @@ mack_creek_lengths <- mack_creek_vertebrates %>%
   clean_names() %>% 
   select(year:sampledate) %>% 
   filter(section == "CC") %>% 
-  mutate(across(where(is.character, tolower))) %>% 
+  mutate(across(where(is.character), tolower)) %>% 
   drop_na(species) %>% 
   group_by(species) %>% 
   summarize(mean_length_cm = mean(length1, na.rm = TRUE),
@@ -45,20 +45,141 @@ mack_creek_lengths <- mack_creek_vertebrates %>%
   ungroup()
 ```
 
+CREATING A REPREX
+```{r}
+#data subset creation
+subset_mack_creek <- mack_creek_vertebrates |> 
+  clean_names() |> 
+  select(section, species, length1) |> 
+  slice_head(n = 5)
+
+#paste dataframe subset
+datapasta::df_paste(subset_mack_creek)
+data.frame(
+  stringsAsFactors = FALSE,
+                                           section = c("CC","CC","CC",
+                                                       "CC","CC"),
+                                           species = c("ONCL","ONCL",
+                                                       "ONCL","ONCL","ONCL"),
+           length1 = c(58, 61, 89, 58, 93)
+                                )
+
+
+```
+
+```{r}
+#REPREX
+library(tidyverse)
+
+subset_mack_creek <- data.frame(
+  stringsAsFactors = FALSE,
+           section = c("CC", "CC", "CC", "CC", "CC"),
+                                species = c("ONCL","ONCL","ONCL",
+                                            "ONCL","ONCL"),
+           length1 = c(58, 61, 89, 58, 93)
+                     )
+mack_creek_lengths <- subset_mack_creek %>% 
+  filter(section == "CC") %>% 
+  mutate(across(where(is.character, tolower)))
+
+``` r
+library(tidyverse)
+
+subset_mack_creek <- data.frame(
+  stringsAsFactors = FALSE,
+           section = c("CC", "CC", "CC", "CC", "CC"),
+                                species = c("ONCL","ONCL","ONCL",
+                                            "ONCL","ONCL"),
+           length1 = c(58, 61, 89, 58, 93)
+                     )
+mack_creek_lengths <- subset_mack_creek %>% 
+  filter(section == "CC") %>% 
+  mutate(across(where(is.character, tolower)))
+#> Error in `mutate()`:
+#> ℹ In argument: `across(where(is.character, tolower))`.
+#> Caused by error in `across()`:
+#> ℹ In argument: `where(is.character, tolower)`.
+#> Caused by error in `where()`:
+#> ! unused argument (tolower)
+```
+
+
+<sup>Created on 2025-08-21 with [reprex v2.1.1](https://reprex.tidyverse.org)</sup>
+
+
 ### reprex 2
 
 Identify what is causing the problem in the code below (there's only one thing). Then, create a very simple reprex that would help yourself, future you, or a colleague fix the problem. **Post your reprex as an issue in your own fork on GitHub.**
 
 ```{r}
-# Example 2:
-mack_creek_vertebrates %>% 
-  clean_names() %>% 
-  filter(species == "ONCL") %>% 
-  ggplot(aes(x = length1, y = weight)) +
-         geom_point(aes(shape = 12), color = "purple") +
+mack_creek_vertebrates |> 
+  clean_names() |>  
+  filter(species == "ONCL") |> 
+  ggplot(aes(x = length1, y = weight, shape = sitecode, color = year)) +
+         geom_point() +
          theme_minimal() +
          labs(x = "Cutthroat trout length (cm)",
               y = "Weight (g)")
+```
+Creating dataframe subset 
+```{r}
+submack <- mack_creek_vertebrates |> 
+  clean_names() |> 
+  select(year, weight, length1, species, sitecode) |> 
+  slice_head(n = 5)
+
+datapasta::df_paste(submack)
+data.frame(
+  stringsAsFactors = FALSE,
+              year = c(1987, 1987, 1987, 1987, 1987),
+            weight = c(1.75, 1.95, 5.6, 2.15, 6.9),
+           length1 = c(58, 61, 89, 58, 93),
+           species = c("ONCL", "ONCL", "ONCL", "ONCL", "ONCL"),
+             sitecode = c("MACKCC-L","MACKCC-L",
+                          "MACKCC-L","MACKCC-L","MACKCC-L")
+   )
+```
+
+Create Reprex 
+```{r}
+library(tidyverse)
+
+mak_sub <- data.frame(
+  stringsAsFactors = FALSE,
+              year = c(1987, 1987, 1987, 1987, 1987),
+            weight = c(1.75, 1.95, 5.6, 2.15, 6.9),
+           length1 = c(58, 61, 89, 58, 93),
+           species = c("ONCL", "ONCL", "ONCL", "ONCL", "ONCL"),
+             sitecode = c("MACKCC-L","MACKCC-L",
+                          "MACKCC-L","MACKCC-L","MACKCC-L"))
+  
+mak_sub |> 
+  filter(species == "ONCL") |> 
+  ggplot(aes(x = length1, y = weight)) +
+         geom_point(aes(shape = "purple"), color = year) 
+```
+Reprex created
+```{r}
+library(tidyverse)
+
+mak_sub <- data.frame(
+  stringsAsFactors = FALSE,
+              year = c(1987, 1987, 1987, 1987, 1987),
+            weight = c(1.75, 1.95, 5.6, 2.15, 6.9),
+           length1 = c(58, 61, 89, 58, 93),
+           species = c("ONCL", "ONCL", "ONCL", "ONCL", "ONCL"),
+             sitecode = c("MACKCC-L","MACKCC-L",
+                          "MACKCC-L","MACKCC-L","MACKCC-L"))
+  
+mak_sub |> 
+  filter(species == "ONCL") |> 
+  ggplot(aes(x = length1, y = weight)) +
+         geom_point(aes(shape = "purple"), color = year) 
+#> Error in `geom_point()`:
+#> ! Problem while setting up geom aesthetics.
+#> ℹ Error occurred in the 1st layer.
+#> Caused by error in `rep()`:
+#> ! attempt to replicate an object of type 'closure'
 ```
 
 ## End
